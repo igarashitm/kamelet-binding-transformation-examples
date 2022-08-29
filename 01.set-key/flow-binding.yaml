@@ -1,0 +1,41 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: KameletBinding
+metadata:
+  name: set-key
+spec:
+
+  integration:
+    flows:
+    - from:
+        uri: 'direct:transformer'
+        steps:
+        - set-header:
+            name: 'kafka.KEY'
+            jsonpath: '$.field1'
+    - from:
+        uri: 'direct:logger'
+        steps:
+          - to:
+              uri: 'log:logger?showHeaders=true'
+  source:
+    ref:
+      kind: Kamelet
+      apiVersion: camel.apache.org/v1alpha1
+      name: kafka-not-secured-source
+    properties:
+      bootstrapServers: 'my-cluster-kafka-bootstrap:9092'
+      topic: 'source-topic'
+
+  steps:
+  - uri: 'direct:logger'
+  - uri: 'direct:transformer'
+  - uri: 'direct:logger'
+
+  sink:
+    ref:
+      kind: Kamelet
+      apiVersion: camel.apache.org/v1alpha1
+      name: kafka-not-secured-sink
+    properties:
+      bootstrapServers: 'my-cluster-kafka-bootstrap:9092'
+      topic: 'sink-topic'
